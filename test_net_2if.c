@@ -36,7 +36,6 @@
 #include <time.h>
 #include <unistd.h>
 
-
 #define TWO_INTERFACES
 #define ETHERTYPE_IP  0x0800
 #define ETHERTYPE_ARP 0x0806
@@ -362,8 +361,7 @@ static void xputs(int ifindex, const char *s)
     char which[] = "[serviceX] ";
 
     which[8] = '0' + ifindex;
-    puts(which);
-    puts(s);
+    printf("%s%s", which, s);
 }
 
 /* Copied from https://tools.ietf.org/html/rfc1071 */
@@ -596,14 +594,14 @@ static bool ping_serve(void)
 {
     uintptr_t i = 0;;
     if (solo5_net_acquire("tap100", &ni[0].fd, &ni[0].info) != SOLO5_R_OK) {
-        puts("Could not acquire 'service0' network\n");
+        printf("Could not acquire 'service0' network\n");
         return false;
     }
     register_pollfd(ni[0].fd, i);
 #ifdef TWO_INTERFACES
     i++;
     if (solo5_net_acquire("tap101", &ni[1].fd, &ni[1].info) != SOLO5_R_OK) {
-        puts("Could not acquire 'service1' network\n");
+        printf("Could not acquire 'service1' network\n");
         return false;
     }
     register_pollfd(ni[1].fd, i);
@@ -612,16 +610,16 @@ static bool ping_serve(void)
     char macaddr_s[(HLEN_ETHER * 2) + 1];
     tohexs(macaddr_s, ni[0].info.mac_address, HLEN_ETHER);
     xputs(0, "Serving ping on 10.0.0.2, with MAC: ");
-    puts(macaddr_s);
-    puts("\n");
+    printf("%s", macaddr_s);
+    printf("\n");
 
     send_garp(0);
 
 #ifdef TWO_INTERFACES
     tohexs(macaddr_s, ni[1].info.mac_address, HLEN_ETHER);
     xputs(1, "Serving ping on 10.1.0.2, with MAC: ");
-    puts(macaddr_s);
-    puts("\n");
+    printf("%s", macaddr_s);
+    printf("\n");
 
     send_garp(1);
 #endif
@@ -641,11 +639,11 @@ static bool ping_serve(void)
                 return false;
 #endif
         if (!io_ready && ready_set != 0) {
-            puts("error: Yield returned false, but handles in set!\n");
+            printf("error: Yield returned false, but handles in set!\n");
             return false;
         }
         if (opt_limit && n_pings_received >= 100000) {
-            puts("Limit reached, exiting\n");
+            printf("Limit reached, exiting\n");
             break;
         }
     }
@@ -657,11 +655,11 @@ int
 main(int argc, char *argv[])
 {
     if (ping_serve()) {
-        puts("SUCCESS\n");
+        printf("SUCCESS\n");
         return SOLO5_EXIT_SUCCESS;
     }
     else {
-        puts("FAILURE\n");
+        printf("FAILURE\n");
         return SOLO5_EXIT_FAILURE;
     }
 }
