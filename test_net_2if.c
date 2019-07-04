@@ -333,7 +333,7 @@ bool solo5_yield(solo5_time_t deadline, solo5_handle_set_t *ready_set)
         for (int i = 0; i < nrevents; i++)
             *ready_set |= (1ULL << (uintptr_t)revents[i].udata);
     }
-    return false;
+    return nrevents;
 }
 
 void register_pollfd(int fd, uintptr_t waitset_data)
@@ -630,11 +630,12 @@ static bool ping_serve(void)
 
         io_ready = solo5_yield(solo5_clock_monotonic() + NSEC_PER_SEC,
                 &ready_set);
-        if (io_ready && (ready_set & 1U << ni[0].fd))
+        if (io_ready && (ready_set & 1U << 0)) {
             if (!handle_packet(0))
                 return false;
+        }
 #ifdef TWO_INTERFACES
-        if (io_ready && (ready_set & 1U << ni[1].fd))
+        if (io_ready && (ready_set & 1U << 1))
             if (!handle_packet(1))
                 return false;
 #endif
